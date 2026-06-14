@@ -1,53 +1,53 @@
-# REXOne ERP — Export-Import & Logistics Management System
+# REXOne ERP - Export-Import & Logistics Management System
 
 REXOne ERP is a premium, enterprise-grade Enterprise Resource Planning system tailored specifically for modern export-import corporations, logistics operators, and global trade coordinators. Built on a state-of-the-art frontend stack, it features interactive dashboards, advanced data tables, document workflows, and integrated AI capabilities.
 
 ---
 
-## 🚀 Key Modules & Features
+## Key Modules & Features
 
-### 💼 1. Commercial Module
+### 1. Commercial Module
 * **Client Accounts**: Manage detailed client directories, shipping profiles, and credit terms.
 * **Service Quotations**: Draft, review, and issue freight and service quotations.
 * **Client Contracts**: Store, track, and monitor service-level agreements and commercial trade contracts.
 
-### 🚢 2. Logistics & Shipments
+### 2. Logistics & Shipments
 * **Shipments Directory**: Comprehensive dashboard listing all active bookings, routes, carrier details, and shipment milestones.
 * **Cargo Tracking**: Real-time cargo tracking and transit logs.
 * **Packing Manifests**: Digitally create, edit, and validate packing lists.
 * **Shipping Instructions**: Draft and transmit detailed cargo handling instructions to carriers and agents.
 * **DnD Fee (Demurrage & Detention)**: Easily calculate demurrage and detention charges for container return delays.
 
-### 🛡️ 3. Compliance & Customs
+### 3. Compliance & Customs
 * **Customs Declarations**: Track import/export customs clearance filings, document logs, and customs agent assignments.
 * **Trade Licenses**: Registry for regulatory licenses, import quotas, and certification checks.
 * **Duty Tariffs**: Built-in calculator and database for HS codes, duty rates, and trade tariffs.
 
-### 💵 4. Finance & Accounting
+### 4. Finance & Accounting
 * **Client Invoicing**: Draft, review, and issue trade invoices to clients.
 * **Accounts Receivable**: Monitor unpaid invoices, client payments, and aging reports.
 * **Cost Accruals**: Track accrued logistics expenses, freight costs, and local port charges.
 * **Vendor Bills**: Log and approve vendor invoices from shipping lines and terminal operators.
 * **General Ledger**: Financial reports, transaction registries, and P&L visualizations.
 
-### 🧠 5. AI System Intelligence
+### 5. AI System Intelligence
 * **Gemini Assistant**: Integrated AI assistant powered by Google's Gemini API to analyze shipment status, explain tariff regulations, search HS codes, and generate trade forecasts.
 
-### 📂 6. Document Hub
+### 6. Document Hub
 * A centralized vault for storing and linking critical trade documentation (Bill of Lading, Packing Lists, Commercial Invoices, Certificates of Origin) directly to shipments and client folders.
 
 ---
 
-## 💎 Design & User Experience Features
+## Design & User Experience Features
 
-* **Sleek Glassmorphism & Micro-animations**: harmonious custom color palettes tailored for high visual fidelity and premium aesthetic appeal.
+* **Sleek Glassmorphism & Micro-animations**: Harmonious custom color palettes tailored for high visual fidelity and premium aesthetic appeal.
 * **Global Dark Mode**: Full first-class dark mode support with automatic OS scheme sync and system theme toggling.
 * **Consistent Custom Scrollbars**: Seamless, custom scrollbars rendered using Radix UI `ScrollArea` (no clunky native browser arrow buttons, auto-reveal on hover).
 * **Live Status Bar**: Bottom status bar showcasing system network status, database connection, active Git branch, live-updating clock (`tabular-nums` alignment), and a **real-time fluctuating USD/IDR exchange rate ticker** with visual flash indicators (green/red) on rate changes.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 * **Core Framework**: React 19, TypeScript 5, Vite 6
 * **Styling**: Tailwind CSS v4, custom CSS variable-driven themes
@@ -57,7 +57,7 @@ REXOne ERP is a premium, enterprise-grade Enterprise Resource Planning system ta
 
 ---
 
-## 🏁 Getting Started
+## Getting Started
 
 ### Prerequisites
 * **Node.js** (v18 or higher recommended)
@@ -103,7 +103,7 @@ npm run preview
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 ├── components/          # React layout, module dashboards, and view components
