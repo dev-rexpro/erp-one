@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { dbService } from '../services/dbService';
 
 interface Partner {
     id: string;
@@ -82,17 +83,32 @@ const ProcurementView: React.FC<ProcurementViewProps> = ({
         ];
     });
 
-    // Sync to Storage
+    // Load states asynchronously from Supabase on mount
     useEffect(() => {
-        localStorage.setItem('PROCUREMENT_PARTNERS', JSON.stringify(partners));
+        const loadSupabaseData = async () => {
+            const fetchedPartners = await dbService.fetchAll('partners', 'PROCUREMENT_PARTNERS', partners);
+            setPartners(fetchedPartners);
+
+            const fetchedRates = await dbService.fetchAll('vendor_rates', 'PROCUREMENT_RATES', vendorRates);
+            setVendorRates(fetchedRates);
+
+            const fetchedPOs = await dbService.fetchAll('purchase_orders', 'PROCUREMENT_POS', purchaseOrders);
+            setPurchaseOrders(fetchedPOs);
+        };
+        loadSupabaseData();
+    }, []);
+
+    // Sync to Storage & Supabase
+    useEffect(() => {
+        dbService.syncState('partners', 'PROCUREMENT_PARTNERS', partners);
     }, [partners]);
 
     useEffect(() => {
-        localStorage.setItem('PROCUREMENT_RATES', JSON.stringify(vendorRates));
+        dbService.syncState('vendor_rates', 'PROCUREMENT_RATES', vendorRates);
     }, [vendorRates]);
 
     useEffect(() => {
-        localStorage.setItem('PROCUREMENT_POS', JSON.stringify(purchaseOrders));
+        dbService.syncState('purchase_orders', 'PROCUREMENT_POS', purchaseOrders);
     }, [purchaseOrders]);
 
     // -------------------------------------------------------------------------

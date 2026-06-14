@@ -97,7 +97,7 @@ export const ShipIcon: React.FC<{className?: string}> = ({className}) => (<Ship 
 export const SettingsIcon: React.FC = () => (<Settings className="h-5 w-5" strokeWidth={1.5} />);
 export const ChevronDownIcon: React.FC<{className?: string}> = ({className}) => (<ChevronDown className={className || "h-5 w-5"} strokeWidth={1.5} />);
 export const SearchIcon: React.FC<{className?: string}> = ({className}) => (<Search className={className || "h-5 w-5 text-gray-400"} strokeWidth={2} />);
-export const BellIcon: React.FC = () => (<Bell className="h-6 w-6" strokeWidth={1.5} />);
+export const BellIcon: React.FC<{className?: string}> = ({className}) => (<Bell className={className || "h-6 w-6"} strokeWidth={1.5} />);
 export const CheckCircleIcon: React.FC<{className?:string}> = ({className}) => (<CheckCircle2 className={className || "h-5 w-5"} />);
 export const FilterIcon: React.FC<{className?: string}> = ({className}) => (<Filter className={className || "h-5 w-5"} strokeWidth={2} />);
 export const DotsHorizontalIcon: React.FC<{className?: string}> = ({className}) => (<MoreHorizontal className={className || "h-5 w-5"} strokeWidth={2} />);

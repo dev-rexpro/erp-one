@@ -9,6 +9,7 @@ import ShippingInstructionListView from './ShippingInstructionListView';
 import ShippingInstructionDetailView from './ShippingInstructionDetailView';
 import { SHIPMENTS_DATA, PACKING_LISTS_DATA, SHIPPING_INSTRUCTIONS_DATA } from '../constants';
 import { Anchor, Compass, Hourglass, Landmark, MapPin, Search, Ship, Timer, Trash2, Edit2, Plus, Calendar } from 'lucide-react';
+import { dbService } from '../services/dbService';
 
 interface TrackingStatus {
     containerNo: string;
@@ -113,21 +114,45 @@ const LogisticsView: React.FC<LogisticsViewProps> = ({
         }
     ];
 
-    // Synchronization
+    // Load states asynchronously from Supabase on mount
     useEffect(() => {
-        localStorage.setItem('LOGISTICS_SHIPMENTS', JSON.stringify(shipments));
+        const loadSupabaseData = async () => {
+            const fetchedShipments = await dbService.fetchAll('shipments', 'LOGISTICS_SHIPMENTS', SHIPMENTS_DATA);
+            setShipments(fetchedShipments);
+
+            const fetchedPackingLists = await dbService.fetchAll('packing_lists', 'LOGISTICS_PACKING_LISTS', PACKING_LISTS_DATA);
+            setPackingLists(fetchedPackingLists);
+
+            const fetchedSI = await dbService.fetchAll('shipping_instructions', 'LOGISTICS_SI', SHIPPING_INSTRUCTIONS_DATA);
+            setShippingInstructions(fetchedSI);
+
+            const defaultDd = [
+                { id: 'DD-001', containerNo: 'MSKU9048392', bookingNo: 'BK-5012', carrier: 'MAERSK LINE', dischargeDate: '2026-06-01', freeDays: 7, currentDays: 5, dailyRateUsd: 120, port: 'Port of Tanjung Priok (IDTPP)', status: 'Safe' as const },
+                { id: 'DD-002', containerNo: 'ONEY3029481', bookingNo: 'BK-5014', carrier: 'OCEAN NETWORK EXPRESS', dischargeDate: '2026-05-28', freeDays: 5, currentDays: 9, dailyRateUsd: 150, port: 'Port of Tanjung Perak (IDSUB)', status: 'Overdue' as const },
+                { id: 'DD-003', containerNo: 'CMAU1203492', bookingNo: 'BK-5017', carrier: 'CMA CGM', dischargeDate: '2026-06-03', freeDays: 7, currentDays: 3, dailyRateUsd: 110, port: 'Port of Belawan (IDBLW)', status: 'Safe' as const },
+                { id: 'DD-004', containerNo: 'MSCU7720348', bookingNo: 'BK-5020', carrier: 'MSC', dischargeDate: '2026-05-30', freeDays: 7, currentDays: 7, dailyRateUsd: 130, port: 'Port of Tanjung Priok (IDTPP)', status: 'Warning' as const },
+            ];
+            const fetchedDemurrage = await dbService.fetchAll('demurrage_cases', 'LOGISTICS_DEMURRAGE', defaultDd);
+            setDemurrageCases(fetchedDemurrage);
+        };
+        loadSupabaseData();
+    }, []);
+
+    // Synchronization to Supabase & cache
+    useEffect(() => {
+        dbService.syncState('shipments', 'LOGISTICS_SHIPMENTS', shipments);
     }, [shipments]);
 
     useEffect(() => {
-        localStorage.setItem('LOGISTICS_PACKING_LISTS', JSON.stringify(packingLists));
+        dbService.syncState('packing_lists', 'LOGISTICS_PACKING_LISTS', packingLists);
     }, [packingLists]);
 
     useEffect(() => {
-        localStorage.setItem('LOGISTICS_SI', JSON.stringify(shippingInstructions));
+        dbService.syncState('shipping_instructions', 'LOGISTICS_SI', shippingInstructions);
     }, [shippingInstructions]);
 
     useEffect(() => {
-        localStorage.setItem('LOGISTICS_DEMURRAGE', JSON.stringify(demurrageCases));
+        dbService.syncState('demurrage_cases', 'LOGISTICS_DEMURRAGE', demurrageCases);
     }, [demurrageCases]);
 
     // -------------------------------------------------------------------------

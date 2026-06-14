@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { dbService } from '../services/dbService';
 
 interface CustomsDoc {
     id: string;
@@ -84,13 +85,25 @@ const ComplianceView: React.FC<ComplianceViewProps> = ({
         { hsCode: '3004.90.99', description: 'Medicaments consisting of mixed or unmixed products for therapeutic uses', importDuty: 5, ppn: 11, pph: 2.5, lartas: true, restrictedReq: 'Izin Edar Badan Pengawas Obat dan Makanan (BPOM) RI' }
     ];
 
-    // Local Storage synch
+    // Load data from Supabase on mount
     useEffect(() => {
-        localStorage.setItem('COMPLIANCE_CUSTOMS', JSON.stringify(customsDocs));
+        const loadSupabaseData = async () => {
+            const fetchedDocs = await dbService.fetchAll('customs_declarations', 'COMPLIANCE_CUSTOMS', customsDocs);
+            setCustomsDocs(fetchedDocs);
+
+            const fetchedLicenses = await dbService.fetchAll('trade_licenses', 'COMPLIANCE_LICENSES', licenses);
+            setLicenses(fetchedLicenses);
+        };
+        loadSupabaseData();
+    }, []);
+
+    // Synchronization to Supabase
+    useEffect(() => {
+        dbService.syncState('customs_declarations', 'COMPLIANCE_CUSTOMS', customsDocs);
     }, [customsDocs]);
 
     useEffect(() => {
-        localStorage.setItem('COMPLIANCE_LICENSES', JSON.stringify(licenses));
+        dbService.syncState('trade_licenses', 'COMPLIANCE_LICENSES', licenses);
     }, [licenses]);
 
     // -------------------------------------------------------------------------
@@ -391,7 +404,7 @@ const ComplianceView: React.FC<ComplianceViewProps> = ({
 
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-widest font-mono">Customs Flow Status</label>
-                                <Select value={docForm.status || 'Draft'} onValueChange={val => setDocForm({...docForm, status: val})}>
+                                <Select value={docForm.status || 'Draft'} onValueChange={val => setDocForm({...docForm, status: val as any})}>
                                     <SelectTrigger className="mt-1 w-full">
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>

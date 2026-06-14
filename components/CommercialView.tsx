@@ -9,6 +9,7 @@ import CustomerContractDetailView from './CustomerContractDetailView';
 import type { Customer, Quotation, CustomerContract, Breadcrumb } from '../types';
 import { CUSTOMERS_DATA, QUOTATIONS_DATA, CUSTOMER_CONTRACTS_DATA } from '../constants';
 import { BriefcaseIcon, DocumentReportIcon, UsersIcon } from '../constants';
+import { dbService } from '../services/dbService';
 
 interface CommercialViewProps {
     activeSubView: string | null;
@@ -43,17 +44,32 @@ const CommercialView: React.FC<CommercialViewProps> = ({
         return cached ? JSON.parse(cached) : CUSTOMER_CONTRACTS_DATA;
     });
 
-    // Save states to LocalStorage
+    // Load states asynchronously from Supabase on mount
     useEffect(() => {
-        localStorage.setItem('CUSTOMERS_DATA', JSON.stringify(customers));
+        const loadSupabaseData = async () => {
+            const fetchedCustomers = await dbService.fetchAll('clients', 'CUSTOMERS_DATA', CUSTOMERS_DATA);
+            setCustomers(fetchedCustomers);
+
+            const fetchedQuotations = await dbService.fetchAll('quotations', 'QUOTATIONS_DATA', QUOTATIONS_DATA);
+            setQuotations(fetchedQuotations);
+
+            const fetchedContracts = await dbService.fetchAll('customer_contracts', 'CUSTOMER_CONTRACTS_DATA', CUSTOMER_CONTRACTS_DATA);
+            setContracts(fetchedContracts);
+        };
+        loadSupabaseData();
+    }, []);
+
+    // Save states to LocalStorage & Supabase
+    useEffect(() => {
+        dbService.syncState('clients', 'CUSTOMERS_DATA', customers);
     }, [customers]);
 
     useEffect(() => {
-        localStorage.setItem('QUOTATIONS_DATA', JSON.stringify(quotations));
+        dbService.syncState('quotations', 'QUOTATIONS_DATA', quotations);
     }, [quotations]);
 
     useEffect(() => {
-        localStorage.setItem('CUSTOMER_CONTRACTS_DATA', JSON.stringify(contracts));
+        dbService.syncState('customer_contracts', 'CUSTOMER_CONTRACTS_DATA', contracts);
     }, [contracts]);
 
     // -------------------------------------------------------------------------

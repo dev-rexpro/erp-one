@@ -6,6 +6,7 @@ import ReceivablesView from './ReceivablesView';
 import PayablesView from './PayablesView';
 import { Landmark, TrendingUp, LineChart, Plus, Trash2, Edit2, Wallet, ArrowUpRight, ArrowDownLeft, FileText, CheckCircle2 } from 'lucide-react';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { dbService } from '../services/dbService';
 
 interface CostAccrual {
     id: string;
@@ -57,16 +58,6 @@ const FinanceView: React.FC<FinanceViewProps> = ({
         return cached ? JSON.parse(cached) : [];
     });
 
-    // Populate initial invoices state if empty
-    useEffect(() => {
-        if (invoices.length === 0) {
-            import('../constants').then(({ INVOICES_DATA }) => {
-                setInvoices(INVOICES_DATA);
-                localStorage.setItem('FINANCE_INVOICES', JSON.stringify(INVOICES_DATA));
-            });
-        }
-    }, []);
-
     const [accruals, setAccruals] = useState<CostAccrual[]>(() => {
         const cached = localStorage.getItem('FINANCE_ACCRUALS');
         return cached ? JSON.parse(cached) : [
@@ -110,23 +101,67 @@ const FinanceView: React.FC<FinanceViewProps> = ({
     const [isPostingTx, setIsPostingTx] = useState(false);
     const [txForm, setTxForm] = useState<Partial<LedgerTransaction>>({});
 
+    // Load states asynchronously from Supabase on mount
+    useEffect(() => {
+        const loadSupabaseData = async () => {
+            const fetchedInvoices = await dbService.fetchAll('invoices', 'FINANCE_INVOICES', []);
+            if (fetchedInvoices.length > 0) {
+                setInvoices(fetchedInvoices);
+            } else {
+                import('../constants').then(({ INVOICES_DATA }) => {
+                    setInvoices(INVOICES_DATA);
+                    dbService.syncState('invoices', 'FINANCE_INVOICES', INVOICES_DATA);
+                });
+            }
+
+            const defaultAccruals: CostAccrual[] = [
+                { id: 'ACR-101', shipmentId: 'REX-26012', expenseCategory: 'Ocean Freight', estimatedCostIDR: 12500000, actualBilledIDR: 0, accrualDate: '2026-06-01', vendorName: 'MAERSK LINE', status: 'Pending Bill' },
+                { id: 'ACR-102', shipmentId: 'REX-26013', expenseCategory: 'Port Handling', estimatedCostIDR: 3500000, actualBilledIDR: 3500000, accrualDate: '2026-06-02', vendorName: 'PT Pelindo II', status: 'Matched' },
+                { id: 'ACR-103', shipmentId: 'REX-26014', expenseCategory: 'Trucking Haulage', estimatedCostIDR: 4200000, actualBilledIDR: 0, accrualDate: '2026-06-03', vendorName: 'PT Samudera Logistik Nusantara', status: 'Pending Bill' },
+                { id: 'ACR-104', shipmentId: 'REX-26015', expenseCategory: 'Customs PPJK', estimatedCostIDR: 1500000, actualBilledIDR: 1500000, accrualDate: '2026-06-04', vendorName: 'CV Jasa Bea Kepabeanan Utama', status: 'Matched' },
+            ];
+            const fetchedAccruals = await dbService.fetchAll('cost_accruals', 'FINANCE_ACCRUALS', defaultAccruals);
+            setAccruals(fetchedAccruals);
+
+            const defaultLedgerAccounts: LedgerAccount[] = [
+                { code: '1010', name: 'Cash and Bank Balances', type: 'Asset', debitBalance: 125400000, creditBalance: 0 },
+                { code: '1120', name: 'Accounts Receivables', type: 'Asset', debitBalance: 85200000, creditBalance: 0 },
+                { code: '2110', name: 'Accounts Payables', type: 'Liability', debitBalance: 0, creditBalance: 45000000 },
+                { code: '4110', name: 'Ocean Freight Revenue', type: 'Revenue', debitBalance: 0, creditBalance: 215000000 },
+                { code: '5110', name: 'Direct Trucking Costs', type: 'Expense', debitBalance: 32000000, creditBalance: 0 },
+                { code: '5120', name: 'Customs Brokerage Expenses', type: 'Expense', debitBalance: 17400000, creditBalance: 0 }
+            ];
+            const fetchedAccounts = await dbService.fetchAll('ledger_accounts', 'FINANCE_LEDGER_ACCOUNTS', defaultLedgerAccounts);
+            setLedgerAccounts(fetchedAccounts);
+
+            const defaultLedgerTxs: LedgerTransaction[] = [
+                { id: 'TX-501', date: '2026-06-01', reference: 'INV-26-00389', description: 'Export client invoicing PT Nusantara Jaya green tea sales', debitAccount: '1120', creditAccount: '4110', amountIDR: 24500000 },
+                { id: 'TX-502', date: '2026-06-02', reference: 'BILL-00912', description: 'Inter-depot transfer trucking haulage pt samudera invoice', debitAccount: '5110', creditAccount: '2110', amountIDR: 4200000 },
+                { id: 'TX-503', date: '2026-06-03', reference: 'PAY-8390', description: 'Bank transfer paid ocean freight CMA CGM dues', debitAccount: '2110', creditAccount: '1010', amountIDR: 12500000 }
+            ];
+            const fetchedTxs = await dbService.fetchAll('ledger_transactions', 'FINANCE_LEDGER_TXS', defaultLedgerTxs);
+            setLedgerTransactions(fetchedTxs);
+        };
+        loadSupabaseData();
+    }, []);
+
     // Cache sync
     useEffect(() => {
         if (invoices.length > 0) {
-            localStorage.setItem('FINANCE_INVOICES', JSON.stringify(invoices));
+            dbService.syncState('invoices', 'FINANCE_INVOICES', invoices);
         }
     }, [invoices]);
 
     useEffect(() => {
-        localStorage.setItem('FINANCE_ACCRUALS', JSON.stringify(accruals));
+        dbService.syncState('cost_accruals', 'FINANCE_ACCRUALS', accruals);
     }, [accruals]);
 
     useEffect(() => {
-        localStorage.setItem('FINANCE_LEDGER_ACCOUNTS', JSON.stringify(ledgerAccounts));
+        dbService.syncState('ledger_accounts', 'FINANCE_LEDGER_ACCOUNTS', ledgerAccounts);
     }, [ledgerAccounts]);
 
     useEffect(() => {
-        localStorage.setItem('FINANCE_LEDGER_TXS', JSON.stringify(ledgerTransactions));
+        dbService.syncState('ledger_transactions', 'FINANCE_LEDGER_TXS', ledgerTransactions);
     }, [ledgerTransactions]);
 
 

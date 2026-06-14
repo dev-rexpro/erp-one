@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -6,6 +5,10 @@ import MainContent from './components/MainContent';
 import StatusBar from './components/StatusBar';
 import { ScrollArea } from './components/ui/scroll-area';
 import type { Breadcrumb, CompanySettings, StatusBarSettings } from './types';
+import AuthView from './components/AuthView';
+import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -30,8 +33,16 @@ const defaultStatusBarSettings: StatusBarSettings = {
     showVersion: true,
 };
 
-
 const App: React.FC = () => {
+  const [session, setSession] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('MOCK_SESSION');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState('home');
   const [activeSubView, setActiveSubView] = useState<string | null>(null);
@@ -61,7 +72,6 @@ const App: React.FC = () => {
     }
   });
 
-
   const handleSetCompanySettings = (newSettings: CompanySettings) => {
     setCompanySettings(newSettings);
     localStorage.setItem('companySettings', JSON.stringify(newSettings));
@@ -72,7 +82,41 @@ const App: React.FC = () => {
     localStorage.setItem('statusBarSettings', JSON.stringify(newSettings));
   };
 
+  // Auth State Listener
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
 
+    // Fetch initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthSuccess = (newSession: any) => {
+    setSession(newSession);
+    if (!isSupabaseConfigured) {
+      localStorage.setItem('MOCK_SESSION', JSON.stringify(newSession));
+    }
+  };
+
+  const handleLogout = async () => {
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    } else {
+      localStorage.removeItem('MOCK_SESSION');
+    }
+    setSession(null);
+    toast.info('Logged out successfully.');
+  };
+
+  // Theme Sync
   useEffect(() => {
     const root = window.document.documentElement;
 
@@ -81,18 +125,13 @@ const App: React.FC = () => {
         theme === 'dark' ||
         (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
       
-      // Use toggle for cleaner add/remove logic
       root.classList.toggle('dark', isDark);
     };
     
-    // Apply the theme when the component mounts or the theme state changes
     applyTheme();
     localStorage.setItem('theme', theme);
 
-    // Listen for changes in the system's color scheme
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    // This handler will be called when the system theme changes
     const handleChange = () => {
       if (theme === 'system') {
         applyTheme();
@@ -100,11 +139,8 @@ const App: React.FC = () => {
     };
 
     mediaQuery.addEventListener('change', handleChange);
-    
-    // Cleanup the event listener when the component unmounts or the theme changes
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
-
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -114,6 +150,15 @@ const App: React.FC = () => {
     (activeView === 'commercial' && activeSubView && activeSubView !== 'dashboard') ||
     (activeView === 'logistics' && activeSubView && activeSubView !== 'dashboard');
 
+  if (!session) {
+    return (
+      <>
+        <AuthView onAuthSuccess={handleAuthSuccess} />
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <div className="flex h-screen flex-col bg-white font-sans text-gray-900 dark:bg-gray-900 dark:text-gray-100">
       <Header 
@@ -121,6 +166,8 @@ const App: React.FC = () => {
         breadcrumbs={breadcrumbs}
         isSidebarOpen={isSidebarOpen}
         companySettings={companySettings}
+        userEmail={session?.user?.email || null}
+        onLogout={handleLogout}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 
@@ -150,7 +197,8 @@ const App: React.FC = () => {
           </div>
         </ScrollArea>
       </div>
-      <StatusBar settings={statusBarSettings} />
+      <StatusBar settings={statusBarSettings} userEmail={session?.user?.email || null} />
+      <Toaster />
     </div>
   );
 };

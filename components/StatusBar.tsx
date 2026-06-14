@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, Database, CheckCircle2, Clock, UserCircle, GitBranch } from 'lucide-react';
 import type { StatusBarSettings } from '../types';
+import { isSupabaseConfigured } from '../lib/supabaseClient';
 
 interface StatusBarProps {
     settings: StatusBarSettings;
+    userEmail: string | null;
 }
 
-const StatusBar: React.FC<StatusBarProps> = ({ settings }) => {
+const StatusBar: React.FC<StatusBarProps> = ({ settings, userEmail }) => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [exchangeRate, setExchangeRate] = useState(16450.50);
   const [trend, setTrend] = useState<'up' | 'down' | 'flat'>('flat');
@@ -91,14 +93,14 @@ const StatusBar: React.FC<StatusBarProps> = ({ settings }) => {
         )}
         {settings.showDatabaseStatus && (
             <div className="flex items-center space-x-1.5">
-              <Database className="h-3 w-3 text-green-500" />
-              <span>Database: OK</span>
+              <Database className={`h-3 w-3 ${isSupabaseConfigured ? 'text-green-500' : 'text-amber-500'}`} />
+              <span>Database: {isSupabaseConfigured ? 'Supabase (OK)' : 'Local Storage'}</span>
             </div>
         )}
         {settings.showSyncStatus && (
             <div className="flex items-center space-x-1.5">
-              <CheckCircle2 className="h-3 w-3 text-green-500" />
-              <span>Sync: OK</span>
+              <CheckCircle2 className={`h-3 w-3 ${isSupabaseConfigured ? 'text-green-500' : 'text-amber-500'}`} />
+              <span>Sync: {isSupabaseConfigured ? 'OK (Cloud)' : 'Local Cache'}</span>
             </div>
         )}
         {settings.showVersion && (
@@ -114,7 +116,7 @@ const StatusBar: React.FC<StatusBarProps> = ({ settings }) => {
         {settings.showCurrentUser && (
             <div className="flex items-center space-x-1.5">
               <UserCircle className="h-3 w-3" />
-              <span>John Doe (JD)</span>
+              <span>{userEmail || 'sandbox@rexcorp.id'}</span>
             </div>
         )}
         {settings.showCurrentUser && (settings.showExchangeRate || settings.showDateTime) && (
