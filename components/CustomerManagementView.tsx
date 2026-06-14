@@ -5,6 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
+import {
     ChevronDownIcon,
     ListIcon,
     RefreshIcon,
@@ -57,9 +65,26 @@ const CustomerManagementView: React.FC<CustomerManagementViewProps> = ({
                         <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-500 hover:text-gray-900">
                             <RefreshIcon className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-500 hover:text-gray-900">
-                            <DotsHorizontalIcon className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-9 gap-1 font-semibold text-gray-700 dark:text-gray-300">
+                                    <span>Action</span>
+                                    <ChevronDownIcon className="h-4 w-4 opacity-70" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200">
+                                <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700" onClick={() => toast.success('Exporting customer database...')}>
+                                    Export Customers
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700" onClick={() => toast.info('Please upload CSV to import customers')}>
+                                    Import Customers (CSV)
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+                                <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-950/20" onClick={() => toast.error('Bulk delete is not active. Select rows to delete.')}>
+                                    Bulk Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button onClick={onAddNew} className="h-9 px-4 font-semibold bg-gray-900 text-white hover:bg-gray-800 dark:bg-blue-600 dark:hover:bg-blue-700">
                             + Add Customer
                         </Button>

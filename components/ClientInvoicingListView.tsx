@@ -16,6 +16,15 @@ import {
 import type { Invoice } from '../types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 interface ClientInvoicingListViewProps {
     invoices: Invoice[];
@@ -112,7 +121,29 @@ const ClientInvoicingListView: React.FC<ClientInvoicingListViewProps> = ({ invoi
                                 <ListIcon className="h-4 w-4" /><span>List View</span><ChevronDownIcon className="h-4 w-4" />
                             </button>
                             <button className="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"><RefreshIcon className="h-4 w-4" /></button>
-                            <button className="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"><DotsHorizontalIcon className="h-4 w-4" /></button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="h-9 gap-1 font-semibold text-gray-700 dark:text-gray-300">
+                                        <span>Action</span>
+                                        <ChevronDownIcon className="h-4 w-4 opacity-70" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200">
+                                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700" onClick={() => toast.success('Exporting invoices...')}>
+                                        Export Invoices (CSV)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700" onClick={() => toast.success('Bulk email sending queue started...')}>
+                                        Bulk Email Invoices
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700" onClick={() => toast.info('Payment recording wizard active')}>
+                                        Record Payments
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+                                    <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400 focus:bg-red-50 dark:focus:bg-red-950/20" onClick={() => toast.error('Bulk delete is not active. Select rows to delete.')}>
+                                        Bulk Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                             <button onClick={onNewInvoice} className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800">+ New Invoice</button>
                         </div>
                     </div>
